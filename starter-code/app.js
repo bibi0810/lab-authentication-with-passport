@@ -14,6 +14,7 @@ const LocalStrategy = require("passport-local").Strategy;
 const bcrypt = require("bcrypt");
 const User = require("./models/user");
 const flash = require("connect-flash");
+const FacebookStrategy = require("passport-facebook").Strategy;
 
 mongoose
   .connect("mongodb://localhost/starter-code", { useNewUrlParser: true })
@@ -85,6 +86,40 @@ passport.use(
         done(err);
       });
   })
+);
+
+// passport.use(new FacebookStrategy({
+//   clientID:process.env.FACEBOOK_CLIENT_ID,
+//   clientSecret:process.env.FACEBOOK_CLIENT_SECRET,
+//   callbackURL: "http://localhost:3000/auth/facebook/callback"
+// }, (accessToken, refreshToken, profile, done) =>{
+//   User.findOne ({facebookId: profile.id}).then(user => {
+//     if(user) return done(null, user)
+//     return user.create ({facebookId: profile.id}).then(newUser => {return done(null,newUser) });
+//   }).catch(err => {
+//     done(err);
+// });
+
+passport.use(
+  new FacebookStrategy(
+    {
+      clientID: process.env.FACEBOOK_APP_ID,
+      clientSecret: process.env.FACEBOOK_APP_SECRET,
+      callbackURL: "http://localhost:3000/auth/facebook/callback"
+    },
+    (accessToken, refreshToken, profile, done) => {
+      User.findOne({ facebookId: profile.id })
+        .then(user => {
+          if (user) return done(null, user);
+          User.create({ facebookId: profile.id }).then(newUser => {
+            return done(null, newUser);
+          });
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    }
+  )
 );
 
 app.use(passport.initialize());

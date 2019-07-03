@@ -72,4 +72,14 @@ passportRouter.get("/logout", (req, res) => {
   res.redirect("/");
 });
 
+passportRouter.get("/facebook", passport.authenticate("facebook"));
+
+passportRouter.get(
+  "/auth/facebook/callback",
+  passport.authenticate("facebook", {
+    successRedirect: "/",
+    failureRedirect: "/login"
+  })
+);
+
 module.exports = passportRouter;
